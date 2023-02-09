@@ -1,4 +1,4 @@
-##How to test local server ?
+## How to test local server ?
 
 -> Compile the program with "make".
 
@@ -12,7 +12,7 @@
 
 Here if all goes well your connection is accepted and you can enter an identifiant.
 
-#Future Update:
+# Future Update:
 
   -Implement Thread for multiple instance. 50%
   
