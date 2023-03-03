@@ -1,4 +1,4 @@
-##How to test local server ?
+## How to test local server ?
 
 -> Compile the program with "make".
 
@@ -12,7 +12,7 @@
 
 Here if all goes well your connection is accepted.
 
-#Future Update:
+# Future Update:
 
   -Implement Thread for multiple instance. 50%
 	UPDATE: I use select() instead of threads
