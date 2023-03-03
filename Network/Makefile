@@ -1,18 +1,19 @@
-all : clean client server
+CC=gcc
+CFLAGS=-Wall -Wextra -pedantic -std=c99 -O2 -I.
+LDFLAGS=-lsqlite3
 
+.PHONY: all clean
+
+all: client server
 
 client: client.o
-	gcc -o client client.o
-
-client.o:
-	gcc -c client.c
+	$(CC) $(LDFLAGS) $^ -o $@
 
 server: server.o
-	gcc -o server server.o
+	$(CC) $(LDFLAGS) $^ -o $@
 
-server.o:
-	gcc -c server.c
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o server client
-
+	rm -f client server *.o

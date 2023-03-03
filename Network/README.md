@@ -8,15 +8,17 @@
 
 -> In the second open ./connect
 
--> Enter Identifiant and password contain in the temp/data file and you are succeful connect to the server.
+-> Enter Identifiant and the server print ur name. Identification come in next commit !
 
-Here if all goes well your connection is accepted and you can enter an identifiant.
+Here if all goes well your connection is accepted.
 
 #Future Update:
 
   -Implement Thread for multiple instance. 50%
+	UPDATE: I use select() instead of threads
   
-  -Start to create Data Base for id and password. 50%
+  -Start to create Data Base for id and password.
+	UPDATE: I'm going to implement data base with sqlite3.
   
   -Try to do it on Internet. 0%
 

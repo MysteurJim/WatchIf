@@ -1,162 +1,147 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
+#include "server.h"
 
-
-typedef struct Data
+int init_server()
 {
-	char id[50];
-	char pass[50];
-	int flag;
-}Data;
-
-
-Data parser(char buff[255])
-{
-	Data d;
-	char f = 0;
-	int j =0;
-	for(int i = 0;i < 255;i++)
-	{
-		if(buff[i] == 0)
-		{
-			d.pass[j-1] = 0;
-			break;
-		}
-		if(buff[i] == ',')
-		{
-			d.id[j] = 0;
-			j = -1;
-			f=1;
-		}else{
-			if(f)
-			{
-				d.pass[j] = buff[i];
-			}else{
-				d.id[j] = buff[i];
-			}
-		}
-		j++;
-	}
-	return d;
-}
-
-void copy_array(char arr[], char arr2[])
-{
-	int i = 0;
-	while(arr[i] !=0)
-	{
-		arr2[i] = arr[i];
-		i++;
-	}
-	arr2[i] = 0;
-}
-
-int diff_array(char arr[],char arr2[])
-{
-	int i = 0;
-	while(arr[i] != 0)
-	{
-		if(arr[i] != arr2[i])
-			return 1;
-		i++;
-	}
-	return 0;
-}
-
-
-void* identification(void* arg)
-{
-	FILE *fptr;
-	char buff[255];
-	char cop[255];
-	int socket = *(int*)arg;
-	int flag = 0;
-	Data d = {
-		.id = "Welcome to Pictu"
-	};
-	send(socket,&d,sizeof(Data),0); 
-	printf("SEND : %s\n",d.id);
-
-	recv(socket,&d,sizeof(Data),0);
-	printf("Le client est : %s\n",d.id);
-
-
-
-	fptr = fopen("temp/data","a+");
-
-	if(fptr != NULL)
-	{
-		cop[0] = 1;
-		while(fgets(buff, 255, (FILE*)fptr))
-		{
-			
-			Data base = parser(buff);
-
-			if(!diff_array(base.id,d.id))
-			{
-				if(!diff_array(base.pass,d.pass))
-				{
-
-					d.flag = 1;
-					printf("L'utilisateur: %s est connecté !",d.id);
-
-					send(socket,&d,sizeof(Data),0);
-					break;
-				}
-				send(socket,&d,sizeof(Data),0);
-			}
-			copy_array(buff,cop);
-		}
-		
-		//fprintf(fptr,"%s,%s\n",d.id,d.pass);
-	}
-
-	fclose(fptr);
-	close(socket);//Pour plus tard a enlever
-	free(arg);
-	pthread_exit(NULL);
-}
-
-int main(void)
-{
-
-	pthread_t clientThread;
-	int socketServer = socket(AF_INET, SOCK_STREAM,0);
+    int socketServer = socket(AF_INET, SOCK_STREAM,0);
 	struct sockaddr_in addrServer;
 	addrServer.sin_addr.s_addr = inet_addr("127.0.0.1");
 	addrServer.sin_family = AF_INET;
-	addrServer.sin_port = htons(30000);
+	addrServer.sin_port = htons(6969);
 
-	bind(socketServer, (const struct sockaddr *)&addrServer, sizeof(addrServer));
-	printf("bind : %d\n", socketServer);
+	if(bind(socketServer, (const struct sockaddr *)&addrServer, sizeof(addrServer)) < 0)
+    {
+        errx(1,"Bind Error");
+    }
 
-	int socketClient;
-	for(int i = 0;i<5;i++){
-		listen(socketServer,5);
-		printf("listen\n");
+    if(listen(socketServer,MAX_CLIENTS) < 0)
+    {
+        errx(1,"Listen Error");
+    }
 
-		struct sockaddr_in addrClient;
-		socklen_t csize = sizeof(addrClient);
-		socketClient = accept(socketServer, (struct sockaddr *)&addrClient, &csize);
-		printf("accept\n");
+    return socketServer;
 
-		printf("client: %d\n", socketClient);
+}
 
-		int *arg = malloc(sizeof(int));
-		*arg = socketClient;
-		pthread_create(&clientThread,NULL,identification,arg);
-	}
-	close(socketClient);
+int new_connextion(int socketServer)
+{
+    struct sockaddr_in addrClient;
+	socklen_t csize = sizeof(addrClient);
+	int socketClient = accept(socketServer, (struct sockaddr *)&addrClient, &csize);
+    if(socketClient == -1)
+    {
+        perror("accept()");
+    }else{
+        puts("New Connexion !");
+    }
+    return socketClient;
+}
+
+int read_client(int sock,char *buffer)
+{
+    int n = 0;
+    if((n = recv(sock,buffer,BUF_SIZE-1, 0)) < 0 )
+    {  
+        perror("read_client()");
+        n = 0;
+    }
+    buffer[n] = 0;
+    return n;
+}
+
+
+static void remove_client(Client *clients, int to_remove, int *actual)
+{
+    /* we remove the client in the array */
+    memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
+    /* number client - 1 */
+    (*actual)--;
+}
+
+int main()
+{
+    int socketServer = init_server();
+
+    
+    char buffer[BUF_SIZE];
+    Client clients[MAX_CLIENTS];
+
+    int actual = 0;
+    int max = socketServer;
+
+    fd_set rdfs;
+
+    while(1)
+    {
+        FD_ZERO(&rdfs);
+
+        FD_SET(STDIN_FILENO, &rdfs);
+        FD_SET(socketServer, &rdfs);
+
+        for (int i = 0; i < actual; i++) {
+            FD_SET(clients[i].sock, &rdfs);
+        }
+
+        if(select(max + 1, &rdfs,NULL,NULL,NULL) == -1)
+        {
+            perror("select()");
+            exit(errno);
+        }
+
+        //Input dans le server -> stop
+        if(FD_ISSET(STDIN_FILENO,&rdfs))
+        {
+            break;
+        }
+        //Input dans le socket du serveur -> Nouvelle connection
+        else if (FD_ISSET(socketServer,&rdfs))
+        {
+            //New client
+            int socketClient = new_connextion(socketServer);
+            if(socketClient == -1)
+                continue;
+
+            if(read_client(socketClient,buffer) < 0)
+            {
+                //disconnected
+                continue;
+            }
+            max = socketClient > max ? socketClient : max;
+
+            FD_SET(socketClient,&rdfs);
+            Client c = {socketClient,""};
+            strncpy(c.name,buffer,BUF_SIZE-1);
+            clients[actual] = c;
+            actual++;
+            printf("%s\n",clients[actual-1].name);
+        }
+        else
+        {
+            for(int i = 0;i < actual;i++)
+            {
+                if(FD_ISSET(clients[i].sock, &rdfs))
+                {
+                    //Client is talking
+                    Client client = clients[i];
+                    int c = read_client(client.sock,buffer);
+                    if(c == 0)
+                    {
+                        //Client disconnected
+                        close(client.sock);
+                        remove_client(clients,i,&actual);
+                        printf("User : %s  -> Leave the server\n",client.name);
+                    }
+                    else
+                    {
+                        //Do something with client' mess
+                    }
+                    break;
+                }
+                
+            }
+        }
+
+    }
 	close(socketServer);
-	printf("close\n");
 	return 0;
 
 }
