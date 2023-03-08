@@ -1,4 +1,3 @@
-//Credit: https://www.medphysics.wisc.edu/~ethan/kmeans/
 //This file contains k-means clustering algorithm 
 #include <math.h>
 #include <stdlib.h>
