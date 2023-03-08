@@ -118,7 +118,7 @@ void calc_cluster_centroids(int dim, int n, int k, double *X, int *cluster_assig
       }
 
 
-   // now divide each coordinate sum by number of members to find mean/centroid
+   // divide each coordinate sum by number of members to find mean/centroid
    // for each cluster
     for (ii = 0; ii < k; ii++)
       {
@@ -127,7 +127,7 @@ void calc_cluster_centroids(int dim, int n, int k, double *X, int *cluster_assig
 
        // for each dimension
         for (jj = 0; jj < dim; jj++)
-          new_cluster_centroid[ii*dim + jj] /= cluster_member_count[ii];  /// XXXX will divide by zero here for any empty clusters!
+          new_cluster_centroid[ii*dim + jj] /= cluster_member_count[ii];  /// XXXX will divide by zero here for any empty clusters
 
       }
   }
@@ -213,7 +213,7 @@ void kmeans(
          calc_cluster_centroids(dim, n, k, X, cluster_assignment_cur, cluster_centroid);
 
         // deal with empty clusters
-        // XXXXXXXXXXXXXX
+        
 
         // see if we've failed to improve
          double totD = calc_total_distance(dim, n, k, X, cluster_centroid, cluster_assignment_cur);
