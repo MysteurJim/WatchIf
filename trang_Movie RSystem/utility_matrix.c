@@ -45,7 +45,7 @@ void get_movie_genres(char *moviegenres, char *s){
 	free(record);
 }
 
-void get_utility_matrix(double *utility_matrix, char *s, int No_of_movies, int No_of_users, int uid){
+void get_utility_matrix(double *utility_matrix, char *s, int No_of_movies, int No_of_users){
 	char *line, *record;
 	char tmp[1024];
 	int i=0, j=0, k=0;
