@@ -1,6 +1,6 @@
 #include "server.h"
 
-int init_server()
+static int init_server()
 {
     int socketServer = socket(AF_INET, SOCK_STREAM,0);
 	struct sockaddr_in addrServer;
@@ -36,110 +36,183 @@ int new_connextion(int socketServer)
     return socketClient;
 }
 
-int read_client(int sock,char *buffer)
+
+int read_client_info(int sock,Infos* info)
 {
     int n = 0;
-    if((n = recv(sock,buffer,BUF_SIZE-1, 0)) < 0 )
-    {  
+    if((n = recv(sock,info,sizeof(Infos),0)) < 0 )
+	{
         perror("read_client()");
-        n = 0;
+		n = 0;
     }
-    buffer[n] = 0;
     return n;
 }
 
-
-static void remove_client(Client *clients, int to_remove, int *actual)
+static void write_client_int(int sock,int mess)
 {
-    /* we remove the client in the array */
-    memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
-    /* number client - 1 */
-    (*actual)--;
+    int n;
+    if((n = send(sock, &mess, sizeof(int), 0)) < 0)
+    {
+        perror("send()");
+        exit(errno);
+    }
+}
+
+char* split(char* buf, char* res)
+{
+    char* res2 = malloc(BUF_SIZE);
+    char* r = res2;
+    char* b = buf;
+    for(;*b != '/';b++)
+    {
+        *r = *b;
+        r++;
+    }
+    *r = 0;
+    b++;
+    char* re = res;
+    for(;*b!=0;b++)
+    {
+        *re = *b;
+        re++;
+    }
+    *re = 0;
+    return res2;
+}
+
+int callback (void* NotUsed, int argc, char **argv,char **azColName)
+{
+    Infos* c = (Infos*)NotUsed;
+    
+    printf("MAIS LID C %s\n",argv[0]);
+    strcpy(c->id,argv[0]);
+    strcpy(c->username,argv[1]);
+    strcpy(c->password,argv[2]);
+    strcpy(c->email,argv[3]);
+    
+    //printf("Secret password: %s\n",argv[0]);
+    return 0;
+}
+
+int read_db_Users(const char *buffer,Infos* c)
+{
+    
+    sqlite3 *db;
+    char *err_msg = 0;
+    char pass[BUF_SIZE];
+    int rc = sqlite3_open("DataBase.db", &db);
+    
+    if (rc != SQLITE_OK) {
+        
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        
+        return 1;
+    }
+    
+    
+    sprintf(pass,"SELECT * FROM Users WHERE Name = '%s'",buffer);
+    rc = sqlite3_exec(db, pass, callback, c, &err_msg);
+    
+    if (rc != SQLITE_OK ) {
+        
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+        
+        sqlite3_free(err_msg);
+        sqlite3_close(db);
+        
+        return 1;
+    } 
+    sqlite3_close(db);
+    return 0;
+}
+
+void sign_in(int sock)
+{
+    Infos* info = malloc(sizeof(Infos));
+    if(read_client_info(sock,info) < 0)
+    {
+        //disconnected
+        close(sock);
+        return;
+    }
+    
+    char* username = info->username;
+    char* mdp      = info->password;
+    char* email    = info->email;
+    
+    //Test sur DB si User and Pass are good
+    Infos* client = malloc(sizeof(Infos));
+
+    if(read_db_Users(username,client) > 0)
+    {
+        write_client_int(sock,2);
+    }
+    else
+    {
+        if(strcmp(client->password,mdp) == 0)
+        {
+            //Si oui
+            //-> Receive Data on Users and send on client.
+            
+            write_client_int(sock,0);
+        }else
+        {
+            //Si non
+            //-> Send to client Error
+            write_client_int(sock,1);
+        }
+    }
+
+    printf("ID: %s \n Name: %s \n Pass: %s \n Email: %s \n",client->id,client->username,client->password,client->email);
+    
+    close(sock);
+    free(info);
+
+}
+// Function executed by the threads.
+void* worker(void* arg)
+{
+	// Gets the shared queue.
+	shared_queue* queue = arg;
+	int res;
+	while(1)
+	{
+		res = shared_queue_pop(queue);
+        if(res != NULL)
+        {
+            sign_in(res);
+        }
+	}
+	
 }
 
 int main()
 {
     int socketServer = init_server();
-
     
-    char buffer[BUF_SIZE];
-    Client clients[MAX_CLIENTS];
+    
 
-    int actual = 0;
-    int max = socketServer;
+    shared_queue* queue = shared_queue_new();
 
-    fd_set rdfs;
+    pthread_t thr1;
+    for(size_t i = 0;i < THREAD_COUNT;i++)
+	{
+		if( pthread_create(&thr1,NULL,worker,(void*)queue) != 0)
+		{
+			err(EXIT_FAILURE,"pthread create()");
+		}	
+	}
 
     while(1)
     {
-        FD_ZERO(&rdfs);
+        int socketClient = new_connextion(socketServer);
+        if(socketClient == -1)
+            continue;
 
-        FD_SET(STDIN_FILENO, &rdfs);
-        FD_SET(socketServer, &rdfs);
+        shared_queue_push(queue,socketClient);
 
-        for (int i = 0; i < actual; i++) {
-            FD_SET(clients[i].sock, &rdfs);
-        }
-
-        if(select(max + 1, &rdfs,NULL,NULL,NULL) == -1)
-        {
-            perror("select()");
-            exit(errno);
-        }
-
-        //Input dans le server -> stop
-        if(FD_ISSET(STDIN_FILENO,&rdfs))
-        {
-            break;
-        }
-        //Input dans le socket du serveur -> Nouvelle connection
-        else if (FD_ISSET(socketServer,&rdfs))
-        {
-            //New client
-            int socketClient = new_connextion(socketServer);
-            if(socketClient == -1)
-                continue;
-
-            if(read_client(socketClient,buffer) < 0)
-            {
-                //disconnected
-                continue;
-            }
-            max = socketClient > max ? socketClient : max;
-
-            FD_SET(socketClient,&rdfs);
-            Client c = {socketClient,""};
-            strncpy(c.name,buffer,BUF_SIZE-1);
-            clients[actual] = c;
-            actual++;
-            printf("%s\n",clients[actual-1].name);
-        }
-        else
-        {
-            for(int i = 0;i < actual;i++)
-            {
-                if(FD_ISSET(clients[i].sock, &rdfs))
-                {
-                    //Client is talking
-                    Client client = clients[i];
-                    int c = read_client(client.sock,buffer);
-                    if(c == 0)
-                    {
-                        //Client disconnected
-                        close(client.sock);
-                        remove_client(clients,i,&actual);
-                        printf("User : %s  -> Leave the server\n",client.name);
-                    }
-                    else
-                    {
-                        //Do something with client' mess
-                    }
-                    break;
-                }
-                
-            }
-        }
-
+            
     }
 	close(socketServer);
 	return 0;

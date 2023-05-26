@@ -1,19 +1,25 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <string.h>
-#include <err.h>
-#include <errno.h>
-#include <stdlib.h>
+#include "client.h"
+
+
+int set_socket_timeout(int sockfd, int timeout_sec)
+{
+    struct timeval timeout;
+    timeout.tv_sec = timeout_sec;
+    timeout.tv_usec = 0;
+
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
+    {
+        perror("set_socket_timeout()");
+        return -1;
+    }
+
+    return 0;
+}
 
 
 int connect_to_server(const char *address, const int port)
 {
-	int socketClient= socket(AF_INET, SOCK_STREAM,0);
+	int socketClient = socket(AF_INET, SOCK_STREAM,0);
 	struct sockaddr_in addrClient;
 	addrClient.sin_addr.s_addr =  inet_addr(address);
 	addrClient.sin_family = AF_INET;
@@ -26,27 +32,42 @@ int connect_to_server(const char *address, const int port)
 	return socketClient;
 }
 
-void write_to_server(int sock, const char* buffer)
+void write_infos_to_server(int socketClient, const Infos* info)
 {
-	if(send(sock,buffer,strlen(buffer),0) < 0)
+	int n;
+	do
 	{
-		perror("write_to_server()");
-		exit(errno);
-	}
+		if((n = send(socketClient,info,sizeof(Infos),0)) < 0)
+		{
+			perror("write_to_server()");
+			exit(errno);
+		}
+	}while(n != sizeof(Infos));
 }
 
-int main(void)
-{
-	int socketClient = connect_to_server("127.0.0.1",6969);
-	char buffer[1024];
-	printf("Entrez votre identifiant: ");
-	
-	for(int i = 0; i< 2 ; i++)
-	{
-		int n = scanf("%s",buffer);
-		write_to_server(socketClient,buffer);
-	}
-	close(socketClient);
 
-	return 0;
+int read_server_int(int socketClient)
+{
+    int n = 0;
+    int msg = 0;
+
+    if (set_socket_timeout(socketClient, 5) < 0)
+    {
+        exit(EXIT_FAILURE); // Gestion de l'erreur de configuration du timeout
+    }
+
+    if ((n = recv(socketClient, &msg, sizeof(int), 0)) < 0)
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        {
+            printf("Aucune donnée disponible dans le délai imparti.\n");
+        }
+        else
+        {
+            perror("read_server_int()");
+            exit(errno);
+        }
+    }
+
+    return msg;
 }

@@ -1,19 +1,37 @@
-CC=gcc
-CFLAGS=-Wall -Wextra -pedantic -std=c99 -O2 -I.
-LDFLAGS=-lsqlite3
+# Variables
+CC = gcc
+CLIENT_CFLAGS = -Wall -Wextra -O3 -rdynamic -lm -g `pkg-config --cflags gtk+-3.0`
+SERVER_CFLAGS = -Wall -Wextra
+CLIENT_LDFLAGS = `pkg-config --libs gtk+-3.0`
+SERVER_LDFLAGS = -lsqlite3
 
-.PHONY: all clean
+# Répertoire des fichiers source
+SRCDIR = .
 
-all: client server
+# Liste des fichiers source
+CLIENT_SOURCE = client.c $(SRCDIR)/queue.c $(SRCDIR)/shared_queue.c
+SERVER_SOURCE = server.c $(SRCDIR)/queue.c $(SRCDIR)/shared_queue.c
+CLIENT_OBJECTS = $(CLIENT_SOURCE:.c=.o)
+SERVER_OBJECTS = $(SERVER_SOURCE:.c=.o)
 
-client: client.o
-	$(CC) $(LDFLAGS) $^ -o $@
+# Exécutables
+CLIENT_EXECUTABLE = client
+SERVER_EXECUTABLE = server
 
-server: server.o
-	$(CC) $(LDFLAGS) $^ -o $@
+# Règles de compilation
+all: $(CLIENT_EXECUTABLE) $(SERVER_EXECUTABLE)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(CLIENT_EXECUTABLE): $(CLIENT_OBJECTS)
+	$(CC) $(CLIENT_CFLAGS) $(CLIENT_OBJECTS) $(CLIENT_LDFLAGS) -o $@
 
+$(SERVER_EXECUTABLE): $(SERVER_OBJECTS)
+	$(CC) $(SERVER_CFLAGS) $(SERVER_OBJECTS) $(SERVER_LDFLAGS) -o $@
+
+# Compilation des fichiers source en fichiers objet
+$(SRCDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(CLIENT_CFLAGS) $(SERVER_CFLAGS) -c $< -o $@
+
+# Nettoyage des fichiers objets et des exécutables
 clean:
-	rm -f client server *.o
+	rm -f $(CLIENT_OBJECTS) $(SERVER_OBJECTS) $(CLIENT_EXECUTABLE) $(SERVER_EXECUTABLE)
+
