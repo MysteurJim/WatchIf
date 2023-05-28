@@ -12,28 +12,26 @@
 #define BIG_double (INFINITY)
 
 void fail(char *str)
-  {
-    printf(str);
-    exit(-1);
-  }
+{
+	printf(str);
+	exit(-1);
+}
 
 double calc_distance(int dim, double *p1, double *p2)
-  {
-    double distance_sq_sum = 0;
-    int ii;
-
-    for (ii = 0; ii < dim; ii++)
-      distance_sq_sum += sqr(p1[ii] - p2[ii]);
-
-    return distance_sq_sum;
-
-  }
+{
+	double distance_sq_sum = 0;
+	int ii;
+	for (ii = 0; ii < dim; ii++)
+	distance_sq_sum += sqr(p1[ii] - p2[ii]);
+	return distance_sq_sum;
+}
 
 void calc_all_distances(int dim, int n, int k, double *X, double *centroid, double *distance_output)
-  {
+{
 	int ii, jj;
-    for (ii = 0; ii < n; ii++) // for each point
-      for (jj = 0; jj < k; jj++) // for each cluster
+	for (ii = 0; ii < n; ii++)
+		// for each point
+		for (jj = 0; jj < k; jj++) // for each cluster
         {
          // calculate distance between point and cluster centroid
           distance_output[ii*k + jj] = calc_distance(dim, &X[ii*dim], &centroid[jj*dim]);
