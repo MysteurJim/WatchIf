@@ -47,6 +47,7 @@ int assignuid()
     	FILE *fstream = fopen("\\Dataset\\ratings_learn.csv","r");
     	int j=0;
     	int max = 0;
+	int t = 0;
     	while((line=fgets(tmp,sizeof(tmp),fstream))!=NULL)
 	{
     		record = strtok(line,",");
@@ -54,7 +55,7 @@ int assignuid()
 		{
         		if(j==0)
 			{
-            			int t = atoi(record);
+            			t = atoi(record);
 			}
         		if(t > max)
 			{

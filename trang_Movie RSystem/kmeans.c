@@ -13,7 +13,7 @@
 
 void fail(char *str)
 {
-	printf(str);
+	printf("%s",str);
 	exit(-1);
 }
 
@@ -211,6 +211,7 @@ void kmeans(int dim,double *X,int n,int k,double *cluster_centroid,int *cluster_
 	// BATCH UPDATE
 	double prev_totD = BIG_double;
 	int batch_iteration = 0;
+	double totD;
 	while (batch_iteration < MAX_ITERATIONS)
       	{
 	//        printf("batch iteration %d \n", batch_iteration);
@@ -223,7 +224,7 @@ void kmeans(int dim,double *X,int n,int k,double *cluster_centroid,int *cluster_
         
 
         	// see if we've failed to improve
-         	double totD = calc_total_distance(dim, n, k, X, cluster_centroid, cluster_assignment_cur);
+         	totD = calc_total_distance(dim, n, k, X, cluster_centroid, cluster_assignment_cur);
          	if (totD > prev_totD)
           	// failed to improve - currently solution worse than previous
            	{
