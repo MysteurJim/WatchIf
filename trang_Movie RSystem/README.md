@@ -10,6 +10,6 @@ Implementation of movie recommendation system using Collaborative Filtering Tech
 5. Top 10 movies printed on command line.
 
 Instructions to run this system:
-1. Open command line and locate the directory where source code is stored and type: `gcc ui.c kmeans.c matrix_normalization.c pearsons.c predictions.c recommender.c sorting.c utility_matrix.c`
+1. Open command line and locate the directory where source code is stored and type: `gcc ui.c recommender.c kmeans.c matrix_normalization.c pearsons.c predictions.c sorting.c utility_matrix.c -g -lm -lsqlite3`
 2. Type `a` on command line to execute the program.
 
