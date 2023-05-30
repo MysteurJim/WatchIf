@@ -22,4 +22,4 @@ main: $(OBJS)
 clean:
 	rm -rf $(OBJDIR)
 	rm -f main
-	rm -r main.o
+	rm -f main.o
