@@ -131,6 +131,7 @@ void main(){
         printf("\nCharacter inputs are not accepted.\n");
         exit(42);
     }
+    int count = findusers();
     switch(ans){
         case 0:
             printf("Enter your user id: ");
@@ -140,7 +141,7 @@ void main(){
                     printf("\nCharacter inputs are not accepted. Please enter correct User ID:\n");
                     break;
                 }
-                else if(uid<1 || uid>=findusers()){
+                else if(uid<1 || uid >= count){
                     printf("Invalid user id. Please enter correct id: \n");
                 }
                 else repeat = 0;
@@ -157,33 +158,42 @@ void main(){
     printf("Movies that you have rated:\n");
 	getmovies(uid);
     repeat = 1;
-    while (repeat == 1){
+    while (repeat == 1)
+    {
         printf("\nDo you want to:\n0. Rate movies(Type '0')\n1. Show existing recommendations for your user id (Type '1')\n2. Movies that you have rated (Type '2')\n3. Exit(Type '3')\n");
-        scanf("%d",&ans);
-        if(isalpha(ans)){
-            printf("\nCharacter inputs are not accepted.\n");
-            break;
-        }
-        switch(ans){
-        case 0:
-            while(choice == 0){
-                ratemovie(uid);
-                printf("Rate more(Type '0') or recommend(Type '1'): ");
-                scanf("%d",&choice);
-            }
-            recommender(uid);
-            break;
-        case 1:
-            recommender(uid);
-            break;
-        case 2:
-            getmovies(uid);
-            break;
-        case 3:
-            repeat = 0;
-            break;
-        default:
-            printf("Enter valid input.\n");
-        }
+        if (scanf("%d",&ans) == 1)
+	{
+        	if(isalpha(ans))
+		{
+           		printf("\nCharacter inputs are not accepted.\n");
+            		break;
+       		}
+        	switch(ans)
+		{
+        		case 0:
+            			while(choice == 0)
+				{
+                			ratemovie(uid);
+                			printf("Rate more(Type '0') or recommend(Type '1'): ");
+                			if (scanf("%d",&choice) != 1)
+					{
+						printf("Failed to read integer.\n");
+					}
+				}
+            			recommender(uid);
+            			break;
+        		case 1:
+            			recommender(uid);
+            			break;
+        		case 2:
+            			getmovies(uid);
+            			break;
+        		case 3:
+            			repeat = 0;
+            			break;
+        		default:
+            			printf("Enter valid input.\n");
+        	}
+    	}
     }
 }
