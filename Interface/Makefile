@@ -18,5 +18,4 @@ main: $(OBJS)
 .PHONY: clean
 
 clean:
-	rm -f $(OBJS)
-	rm -f example0
+	rm -rf $(OBJS)
