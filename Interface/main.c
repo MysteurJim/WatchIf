@@ -2,6 +2,20 @@
 #include "Network/client.h"
 
 int socketClient;
+GtkWidget *top_comment1;
+Infos* utilisateur;
+
+char* get_movie_watched()
+{
+    socketClient = connect_to_server("127.0.0.1",6969);
+    write_server_int(socketClient,2);
+    write_infos_to_server(socketClient,utilisateur);
+    char* buf = malloc(2048);
+    read_server(socketClient,buf);
+    return buf;
+}
+
+
 
 // Callback function for the "destroy" signal of the window
 void on_window_destroy(GtkWidget *widget, gpointer user_data) 
@@ -36,7 +50,7 @@ void on_login_button_popup_clicked(GtkWidget *widget, gpointer user_data)
     GtkEntry *password_entry = GTK_ENTRY(gtk_builder_get_object(builder, "password_entry"));
     const gchar *username_text = gtk_entry_get_text(username_entry);
     const gchar *password_text = gtk_entry_get_text(password_entry);
-
+    char* films = malloc(5128);
     write_server_int(socketClient,0);
     int n;
     if((n = sign_in(socketClient,username_text,password_text,"")))
@@ -44,12 +58,29 @@ void on_login_button_popup_clicked(GtkWidget *widget, gpointer user_data)
         printf("Incorrect username or password\n");
     }else
     {
-        printf("You are Online! %i \n",n);
-    };
+        utilisateur = malloc(sizeof(Infos));
+        strcpy(utilisateur->username,username_text);
+        strcpy(utilisateur->password,password_text);
+        strcpy(utilisateur->email,"");
+        char* res = get_movie_watched();
+        char* token = strtok(res,"|");
+        sprintf(films,"%s",token);
+        token = strtok(NULL,"|");
+        int n = 0;
+        while(token!= NULL && n < 10)
+        {
+            sprintf(films,"%s%s\n",films,token);
+            token = strtok(NULL,"|");
+            n++;
+        }
 
+        printf("You are Online!\n");
+    };
+    gtk_label_set_text(GTK_LABEL(top_comment1),(gchar*) films);
     g_object_set_data(G_OBJECT(widget), "username_text", g_strdup(username_text));
     g_object_set_data(G_OBJECT(widget), "password_text", g_strdup(password_text));
     close(socketClient);
+    free(films);
 }
 // Callback function for the "clicked" signal of the create button popup
 void on_create_button_popup_clicked(GtkWidget *widget, gpointer user_data) 
@@ -98,7 +129,9 @@ void on_confirm_button_clicked(GtkWidget *widget, gpointer user_data)
     {
         g_object_set_data(G_OBJECT(widget), "username_text2", g_strdup(username_text2));
         g_object_set_data(G_OBJECT(widget), "password_text2", g_strdup(password_text2));
-        sign_up(socketClient,username_text2,password_text2,"");
+        char* email = malloc(2048);
+        *email = 0;
+        sign_up(socketClient,username_text2,password_text2,email);
         printf("You are SIGN UP, Now go LOGIN \n");
     } 
     else 
@@ -138,6 +171,7 @@ int main(int argc, char *argv[])
     GtkWidget *search_button = GTK_WIDGET(gtk_builder_get_object(builder, "search_button"));
     GtkWidget *cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "cancel_button"));
     GtkWidget *confirm_button = GTK_WIDGET(gtk_builder_get_object(builder, "confirm_button"));
+    top_comment1 = GTK_WIDGET(gtk_builder_get_object(builder, "top_comment1"));
 
     // Connect the "clicked" signal to the buttons callbacks
     g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_button_clicked), builder);

@@ -80,6 +80,30 @@ int read_server_int(int socketClient)
 
     return msg;
 }
+
+int read_server_info(int sockClient,Infos* info)
+{
+    int n = 0;
+    if((n = recv(sockClient,info,sizeof(Infos),0)) < 0 )
+	{
+        perror("read_client()");
+		n = 0;
+    }
+    return n;
+}
+
+int read_server(int sock,char *buffer)
+{
+    int n = 0;
+    if((n = recv(sock,buffer,2048-1, 0)) < 0 )
+    {  
+        perror("read_client()");
+        exit(errno);
+    }
+    buffer[n] = 0;
+    return n;
+}
+
 int sign_in(int socketClient,const gchar* username,const gchar* password,const gchar* email)
 {
 

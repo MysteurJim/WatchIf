@@ -63,11 +63,24 @@ int read_client_info(int sock,Infos* info)
 
 static void write_client(int sock,const char *buffer)
 {
-    if(send(sock, buffer, strlen(buffer), 0) < 0)
+    if(send(sock, buffer, 2048-1, 0) < 0)
     {
         perror("send()");
         exit(errno);
     }
+}
+
+void write_infos_to_client(int socketClient, const Infos* info)
+{
+	int n;
+	do
+	{
+		if((n = send(socketClient,info,sizeof(Infos),0)) < 0)
+		{
+			perror("write_to_server()");
+			exit(errno);
+		}
+	}while(n != sizeof(Infos));
 }
 
 static void write_client_int(int sock,int mess)
@@ -125,6 +138,55 @@ int read_db_Users(const char *buffer,Infos* c)
     //printf("User: %s Password: %s\n",buffer,res);
     sqlite3_close(db);
     return 0;
+}
+
+int get_movies_watch (void* NotUsed, int argc, char **argv,char **azColName)
+{
+    char* res = (char*)NotUsed;
+    strcpy(res,argv[0]);
+ 
+    return 0;
+}
+int litle_callback(void* NotUsed, int argc, char **argv,char **azColName)
+{
+    int* res = (int*)NotUsed;
+    *res = atoi(argv[0]);
+    return 0;
+}
+char* read_db_Movies_Watched(Infos* info)
+{
+    sqlite3 *db;
+    char *err_msg = 0;
+    char pass[BUF_SIZE];
+    char idrequest[BUF_SIZE];
+    char* res = malloc(2048);
+    int rc = sqlite3_open("DataBase/database.db", &db);
+    
+    if (rc != SQLITE_OK) {
+        
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        
+        return;
+    }
+    int uid;
+    sprintf(idrequest,"SELECT id FROM Users WHERE Name = '%s'",info->username);
+    sqlite3_exec(db,idrequest , litle_callback, &uid, &err_msg);
+    sprintf(pass,"SELECT GROUP_CONCAT(m.Title,'|') FROM Rates r JOIN Movies m ON r.movies_id = m.id WHERE r.users_id = %i",uid);
+    
+    rc = sqlite3_exec(db, pass, get_movies_watch, res, &err_msg);
+
+    if (rc != SQLITE_OK ) {
+        
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+        
+        sqlite3_free(err_msg);
+        sqlite3_close(db);
+        
+        return;
+    } 
+    sqlite3_close(db);
+    return res;
 }
 
 int write_db_Users(Infos* c)
@@ -226,6 +288,23 @@ void sign_in(int sock)
     free(info);
 
 }
+
+void request_movies(int sock)
+{
+    Infos* info = malloc(sizeof(Infos));
+    if(read_client_info(sock,info) < 0)
+    {
+        //disconnected
+        close(sock);
+        return;
+    }
+    
+    char* res = read_db_Movies_Watched(info);
+    write_client(sock,res);
+
+
+}
+
 // Function executed by the threads.
 void* worker(void* arg)
 {
@@ -237,14 +316,16 @@ void* worker(void* arg)
 		res = shared_queue_pop(queue);
         if(res != NULL)
         {
-            if(read_client_int(res) == 0)
+            int n = read_client_int(res);
+            if(n == 0)
             {  
-                printf("JE VAIS SIGN_IN\n");
                 sign_in(res);
+            }else if(n == 1)
+            {
+                sign_up(res);
             }else
             {
-                printf("JE VAIS SIGN_UP\n");
-                sign_up(res);
+                request_movies(res);
             }
             
         }

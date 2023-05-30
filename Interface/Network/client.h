@@ -25,12 +25,14 @@ typedef struct
     char  id[128];
     char username[128];
     char password[128];
-    char email[128];
+    char email[2048];
 }Infos;
 
 int connect_to_server(const char *address, const int port);
 void write_infos_to_server(int socketClient,const Infos* info);
 int read_server_int(int socketClient);
+int read_server_info(int sockClient,Infos* info);
+int read_server(int sock,char *buffer);
 void write_server_int(int socketClient,int mess);
 int sign_in(int socketClient,const gchar* username,const gchar* password,const gchar* email);
 int sign_up(int socketClient,const gchar* username,const gchar* password,const gchar* email);
