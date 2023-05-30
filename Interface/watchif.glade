@@ -118,6 +118,7 @@
               <object class="GtkEntry" id="password_entry2">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="visibility">False</property>
                 <property name="invisible_char">●</property>
                 <property name="invisible_char_set">True</property>
               </object>
@@ -144,6 +145,7 @@
               <object class="GtkEntry" id="confirm_entry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="visibility">False</property>
                 <property name="invisible_char">●</property>
                 <property name="invisible_char_set">True</property>
               </object>
@@ -290,7 +292,9 @@
               <object class="GtkEntry" id="password_entry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="visibility">False</property>
                 <property name="invisible_char">●</property>
+                <property name="invisible_char_set">True</property>
                 <property name="placeholder_text">password</property>
               </object>
               <packing>
