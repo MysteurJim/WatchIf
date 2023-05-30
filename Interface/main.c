@@ -144,8 +144,8 @@ int main(int argc, char *argv[])
     {
         // TODO: remove g_print
         g_print("Login Information: Username - %s, Password - %s\n", username_text, password_text);
-        g_free((gpointer)username_text2);
-        g_free((gpointer)password_text2);
+        g_free((gpointer)username_text);
+        g_free((gpointer)password_text);
     }
 
     // Retrieve the create account information
