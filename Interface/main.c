@@ -3,7 +3,10 @@
 
 int socketClient;
 GtkWidget *top_comment1;
-Infos* utilisateur;
+Infos     *utilisateur;
+GtkWidget *login_button;
+GtkWidget *create_button;
+GtkWidget *disconnect_button;
 
 char* get_movie_watched()
 {
@@ -74,9 +77,14 @@ void on_login_button_popup_clicked(GtkWidget *widget, gpointer user_data)
             n++;
         }
 
+        gtk_widget_set_sensitive(login_button, FALSE);
+        gtk_widget_set_sensitive(create_button, FALSE);
+
+        gtk_widget_set_sensitive(disconnect_button, TRUE);
+        gtk_label_set_text(GTK_LABEL(top_comment1),(gchar*) films);
         printf("You are Online!\n");
     };
-    gtk_label_set_text(GTK_LABEL(top_comment1),(gchar*) films);
+   
     g_object_set_data(G_OBJECT(widget), "username_text", g_strdup(username_text));
     g_object_set_data(G_OBJECT(widget), "password_text", g_strdup(password_text));
     close(socketClient);
@@ -145,6 +153,16 @@ void on_confirm_button_clicked(GtkWidget *widget, gpointer user_data)
     close(socketClient);
 }
 
+void on_disconnect_button_clicked()
+{
+    gtk_widget_set_sensitive(disconnect_button,FALSE);
+    gtk_widget_set_sensitive(login_button, TRUE);
+    gtk_widget_set_sensitive(create_button, TRUE);
+
+    utilisateur = NULL;
+     gtk_label_set_text(GTK_LABEL(top_comment1),"Login to see your list");
+}
+
 int main(int argc, char *argv[]) 
 {
 
@@ -164,14 +182,18 @@ int main(int argc, char *argv[])
     g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), NULL);
 
     // Get the buttons widgets from the Glade file
-    GtkWidget *login_button = GTK_WIDGET(gtk_builder_get_object(builder, "login_button"));
-    GtkWidget *create_button = GTK_WIDGET(gtk_builder_get_object(builder, "create_button"));
+    login_button = GTK_WIDGET(gtk_builder_get_object(builder, "login_button"));
+    create_button = GTK_WIDGET(gtk_builder_get_object(builder, "create_button"));
     GtkWidget *login_button_popup = GTK_WIDGET(gtk_builder_get_object(builder, "login_button_popup"));
     GtkWidget *create_button_popup = GTK_WIDGET(gtk_builder_get_object(builder, "create_button_popup"));
     GtkWidget *search_button = GTK_WIDGET(gtk_builder_get_object(builder, "search_button"));
     GtkWidget *cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "cancel_button"));
     GtkWidget *confirm_button = GTK_WIDGET(gtk_builder_get_object(builder, "confirm_button"));
+    disconnect_button = GTK_WIDGET(gtk_builder_get_object(builder, "disconnect_button"));
     top_comment1 = GTK_WIDGET(gtk_builder_get_object(builder, "top_comment1"));
+
+
+    //gtk_widget_set_sensitive(disconnect_button,FALSE);
 
     // Connect the "clicked" signal to the buttons callbacks
     g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_button_clicked), builder);
@@ -181,6 +203,7 @@ int main(int argc, char *argv[])
     g_signal_connect(search_button, "clicked", G_CALLBACK(on_search_button_clicked), builder);
     g_signal_connect(cancel_button, "clicked", G_CALLBACK(on_cancel_button_clicked), builder);
     g_signal_connect(confirm_button, "clicked", G_CALLBACK(on_confirm_button_clicked), builder);
+    g_signal_connect(disconnect_button, "clicked", G_CALLBACK(on_disconnect_button_clicked), builder);
 
     // Show the window and enter the GTK main loop
     gtk_widget_show_all(window);

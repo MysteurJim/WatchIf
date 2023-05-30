@@ -396,7 +396,7 @@
                       <object class="GtkLabel" id="empty3">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">                              </property>
+                        <property name="label" translatable="yes">                   </property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -407,6 +407,7 @@
                     <child>
                       <object class="GtkButton" id="login_button">
                         <property name="label" translatable="yes">Login</property>
+                        <property name="width-request">100</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
@@ -428,6 +429,20 @@
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="disconnect_button">
+                        <property name="label" translatable="yes">Disconnect</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                   </object>
@@ -871,7 +886,7 @@
                       <object class="GtkLabel" id="top_comment1">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Top Comment:</property>
+                        <property name="label" translatable="yes">Login to see your list</property>
                         <property name="xalign">0.029999999329447746</property>
                       </object>
                       <packing>
