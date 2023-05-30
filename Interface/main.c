@@ -148,7 +148,6 @@ void on_confirm_button_clicked(GtkWidget *widget, gpointer user_data)
         GtkWidget *error_message = GTK_WIDGET(gtk_builder_get_object(builder, "error_message"));
         gtk_dialog_run(GTK_DIALOG(error_message));
         gtk_widget_hide(error_message);
-        return;
     }
     close(socketClient);
 }
@@ -160,7 +159,12 @@ void on_disconnect_button_clicked()
     gtk_widget_set_sensitive(create_button, TRUE);
 
     utilisateur = NULL;
-     gtk_label_set_text(GTK_LABEL(top_comment1),"Login to see your list");
+    gtk_label_set_text(GTK_LABEL(top_comment1),"Login to see your list");
+    
+    GtkWidget *logout_message = GTK_WIDGET(gtk_builder_get_object(builder, "logout_message"));
+    gtk_dialog_run(GTK_DIALOG(logout_message));
+    gtk_widget_hide(logout_message);
+
 }
 
 int main(int argc, char *argv[]) 
