@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
         g_free((gpointer)password_text);
     }
 
-    // Retrieve the create account information
+    // Retrieve the create accgcc ui.c recommender.c kmeans.c matrix_normalization.c pearsons.c predictions.c sorting.c utility_matrix.c -g -lm -lsqlite3ount information
     const gchar *username_text2 = g_object_get_data(G_OBJECT(confirm_button), "username_text2");
     const gchar *password_text2 = g_object_get_data(G_OBJECT(confirm_button), "password_text2");
     if (username_text != NULL && password_text != NULL) 
