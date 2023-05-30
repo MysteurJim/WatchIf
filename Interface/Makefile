@@ -3,19 +3,22 @@ PKGCONFIG = $(shell which pkg-config)
 CFLAGS = $(shell $(PKGCONFIG) --cflags gtk+-3.0)
 LIBS = $(shell $(PKGCONFIG) --libs gtk+-3.0)
 
-SRC = main.c
+SRC = main.c Network/client.c Network/queue.c Network/shared_queue.c
+OBJDIR = obj
 
-OBJS = $(SRC:.c=.o)
+OBJS = $(addprefix $(OBJDIR)/,$(SRC:.c=.o))
 
 all: main
 
-%.o: %.c
-	$(CC) -c -o $(@F) $(CFLAGS) $<
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(@D)
+	$(CC) -c -o $@ $(CFLAGS) $<
 
 main: $(OBJS)
-	$(CC) -o $(@F) $(LIBS) $(OBJS)
+	$(CC) -o $@ $(LIBS) $^
 
 .PHONY: clean
 
 clean:
-	rm -f $(OBJS)
+	rm -rf $(OBJDIR)
+	rm -f main
