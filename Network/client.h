@@ -32,5 +32,5 @@ void on_button2_clicked();
 int connect_to_server(const char *address, const int port);
 void write_infos_to_server(int socketClient,const Infos* info);
 int read_server_int();
-
+void write_server_int(int mess);
 #endif

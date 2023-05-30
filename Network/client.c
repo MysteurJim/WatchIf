@@ -71,3 +71,36 @@ int read_server_int(int socketClient)
 
     return msg;
 }
+int sign_in(char* username,char* password,char* email)
+{
+
+	Infos* info = malloc(sizeof(Infos));
+	strcpy(info->username,username);
+	strcpy(info->password,password);
+	strcpy(info->email,email);
+	write_infos_to_server(info);
+
+	//CODE DE CONFIRMATION
+	//0 -> Nice
+	//1 ->  Incorrect username or password.
+	int msg = read_server_int();
+	free(info);
+	return msg;
+}
+
+int sign_up(char* username,char* password,char* email)
+{
+
+	Infos* info = malloc(sizeof(Infos));
+	strcpy(info->username,username);
+	strcpy(info->password,password);
+	strcpy(info->email,email);
+	write_infos_to_server(info);
+
+	//CODE DE CONFIRMATION
+	//0 -> Nice
+	//1 ->  Incorrect username or password.
+	int msg = read_server_int();
+	free(info);
+	return msg;
+}
