@@ -32,8 +32,8 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="create_button">
-                <property name="label" translatable="yes">Create</property>
+              <object class="GtkButton" id="confirm_button">
+                <property name="label" translatable="yes">Confirm</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -159,7 +159,7 @@
     </child>
     <action-widgets>
       <action-widget response="0">cancel_button</action-widget>
-      <action-widget response="0">create_button</action-widget>
+      <action-widget response="0">confirm_button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkMessageDialog" id="error">
