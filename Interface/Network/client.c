@@ -32,18 +32,7 @@ int connect_to_server(const char *address, const int port)
 	return socketClient;
 }
 
-void write_infos_to_server(int socketClient, const Infos* info)
-{
-	int n;
-	do
-	{
-		if((n = send(socketClient,info,sizeof(Infos),0)) < 0)
-		{
-			perror("write_to_server()");
-			exit(errno);
-		}
-	}while(n != sizeof(Infos));
-}
+
 
 void write_server_int(int socketClient,int mess)
 {
@@ -89,6 +78,43 @@ int read_server_info(int sockClient,Infos* info)
         perror("read_client()");
 		n = 0;
     }
+    return n;
+}
+
+void write_infos_to_server(int socketClient, const Infos* info)
+{
+	int n;
+	do
+	{
+		if((n = send(socketClient,info,sizeof(Infos),0)) < 0)
+		{
+			perror("write_to_server()");
+			exit(errno);
+		}
+	}while(n != sizeof(Infos));
+}
+
+void write_server(int sock,const char *buffer)
+{
+    if(send(sock, buffer, 2048-1, 0) < 0)
+    {
+        perror("send()");
+        exit(errno);
+    }
+}
+
+int read_server_movie(int sockClient,Movie* mov)
+{
+    int n = 0;
+    do{
+        if((n += recv(sockClient,mov,sizeof(mov),0)) < 0 )
+        {
+            perror("read_client()");
+            n = 0;
+            
+        }
+        printf("Receve :%d\n",n);
+    }while(n < sizeof(Movie));
     return n;
 }
 

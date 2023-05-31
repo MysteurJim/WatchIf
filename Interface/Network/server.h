@@ -28,6 +28,13 @@ typedef struct
     char email[128];
 }Infos;
 
+typedef struct
+{
+    int id;
+    char Title[1024];
+    int  Year;
+    float Rate;
+}Movie;
 
 static int init_server();
 static int new_connextion(int socketServer);

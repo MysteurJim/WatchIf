@@ -28,12 +28,22 @@ typedef struct
     char email[2048];
 }Infos;
 
+typedef struct
+{
+    int id;
+    char Title[1024];
+    int  Year;
+    float Rate;
+}Movie;
+
 int connect_to_server(const char *address, const int port);
 void write_infos_to_server(int socketClient,const Infos* info);
 int read_server_int(int socketClient);
 int read_server_info(int sockClient,Infos* info);
 int read_server(int sock,char *buffer);
+int read_server_movie(int sockClient,Movie* mov);
 void write_server_int(int socketClient,int mess);
+void write_server(int sock,const char *buffer);
 int sign_in(int socketClient,const gchar* username,const gchar* password,const gchar* email);
 int sign_up(int socketClient,const gchar* username,const gchar* password,const gchar* email);
 #endif

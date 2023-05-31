@@ -83,6 +83,33 @@ void write_infos_to_client(int socketClient, const Infos* info)
 	}while(n != sizeof(Infos));
 }
 
+void write_movie_to_client(int socketClient, Movie* mov)
+{
+	int n;
+	do
+	{
+		if((n = send(socketClient,mov,sizeof(Movie),0)) < 0)
+		{
+			perror("write_to_server()");
+			exit(errno);
+		}
+        printf("%i\n",n);
+	}while(n != sizeof(Movie));
+}
+
+int read_client(int sock,char *buffer)
+{
+    int n = 0;
+    if((n = recv(sock,buffer,2048-1, 0)) < 0 )
+    {  
+        perror("read_client()");
+        exit(errno);
+    }
+    buffer[n] = 0;
+    return n;
+}
+
+
 static void write_client_int(int sock,int mess)
 {
     int n;
@@ -289,6 +316,8 @@ void sign_in(int sock)
 
 }
 
+
+
 void request_movies(int sock)
 {
     Infos* info = malloc(sizeof(Infos));
@@ -303,6 +332,63 @@ void request_movies(int sock)
     write_client(sock,res);
 
 
+}
+
+int get_movies_search(void* NotUsed, int argc, char **argv,char **azColName)
+{
+    Movie* res = (Movie*)NotUsed;
+    res->id = -1;
+    if(argc > 0)
+    {
+        res->id = atoi(argv[0]);
+        strcpy(res->Title,argv[1]);
+        
+        res->Year = atoi(argv[2]);
+        res->Rate = atof(argv[3]);
+    }
+    return 0;
+}
+
+Movie* read_db_Movies_Searched(char* buf)
+{
+    sqlite3 *db;
+    char *err_msg = 0;
+    char pass[BUF_SIZE];
+    Movie* mov = malloc(sizeof(Movie));
+    int rc = sqlite3_open("DataBase/database.db", &db);
+    
+    if (rc != SQLITE_OK) {
+        
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        
+        return;
+    }
+    
+    sprintf(pass,"SELECT * FROM Movies WHERE Title = '%s'",buf);
+    
+    rc = sqlite3_exec(db, pass, get_movies_search, mov, &err_msg);
+
+    if (rc != SQLITE_OK ) {
+        
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+        
+        sqlite3_free(err_msg);
+        sqlite3_close(db);
+        
+        return;
+    } 
+    sqlite3_close(db);
+    return mov;
+}
+
+void search_movie(int sock)
+{
+    char* buf = malloc(2048);
+    read_client(sock,buf);
+    Movie* mov = read_db_Movies_Searched(buf);
+    printf("%s\n",mov->Title);
+    write_movie_to_client(sock,mov);
 }
 
 // Function executed by the threads.
@@ -323,9 +409,12 @@ void* worker(void* arg)
             }else if(n == 1)
             {
                 sign_up(res);
-            }else
+            }else if(n==2)
             {
                 request_movies(res);
+            }else
+            {
+                search_movie(res);
             }
             
         }
