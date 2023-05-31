@@ -95,6 +95,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="invisible-char">●</property>
+                <property name="caps_lock_warning">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -121,6 +122,8 @@
                 <property name="can-focus">True</property>
                 <property name="invisible-char">●</property>
                 <property name="input-purpose">password</property>
+                <property name="visibility">False</property>
+                <property name="invisible_char_set">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -147,6 +150,8 @@
                 <property name="can-focus">True</property>
                 <property name="invisible-char">●</property>
                 <property name="input-purpose">password</property>
+                <property name="visibility">False</property>
+                <property name="invisible_char_set">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -176,6 +181,9 @@
     <property name="type-hint">dialog</property>
     <property name="skip-taskbar-hint">True</property>
     <property name="message-type">error</property>
+    <property name="modal">True</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="message_type">error</property>
     <property name="buttons">ok</property>
     <property name="text" translatable="yes">Username already taken or Password is not the same both times</property>
     <child internal-child="vbox">
@@ -294,6 +302,8 @@
                 <property name="invisible-char">●</property>
                 <property name="placeholder-text">password</property>
                 <property name="input-purpose">password</property>
+                <property name="visibility">False</property>
+                <property name="invisible_char_set">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -317,6 +327,36 @@
     <style>
       <class name="background-color = blue;"/>
     </style>
+  </object>
+  <object class="GtkMessageDialog" id="logout_message">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="type">popup</property>
+    <property name="resizable">False</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="buttons">ok</property>
+    <property name="text" translatable="yes">Logout Succesful</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="messagedialog-vbox3">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="messagedialog-action_area3">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
   </object>
   <object class="GtkWindow" id="main_window">
     <property name="can-focus">False</property>
@@ -421,7 +461,7 @@
                     <child>
                       <object class="GtkButton" id="login_button">
                         <property name="label" translatable="yes">Login</property>
-                        <property name="width-request">100</property>
+                        <property name="width_request">100</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
@@ -450,8 +490,8 @@
                         <property name="label" translatable="yes">Disconnect</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
