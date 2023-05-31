@@ -10,6 +10,7 @@ GtkWidget *create_button;
 GtkWidget *disconnect_button;
 GtkWidget *button_rate;
 GtkWidget *search_button;
+GtkWidget * logout_message;
 
 char* get_movie_watched()
 {
@@ -196,7 +197,7 @@ void on_disconnect_button_clicked()
     gtk_label_set_text(GTK_LABEL(top_comment1),"Login to see your list");
     gtk_widget_set_sensitive(button_rate, FALSE);
     
-    GtkWidget *logout_message = GTK_WIDGET(gtk_builder_get_object(builder, "logout_message"));
+    
     gtk_dialog_run(GTK_DIALOG(logout_message));
     gtk_widget_hide(logout_message);
 }
@@ -231,7 +232,7 @@ int main(int argc, char *argv[])
     top_comment1 = GTK_WIDGET(gtk_builder_get_object(builder, "top_comment1"));
     GtkWidget *box7 = GTK_WIDGET(gtk_builder_get_object(builder, "box7"));
     button_rate = GTK_WIDGET(gtk_builder_get_object(builder, "button_rate"));
-
+    logout_message = GTK_WIDGET(gtk_builder_get_object(builder, "logout_message"));
     //gtk_widget_set_sensitive(disconnect_button,FALSE);
 
     // Connect the "clicked" signal to the buttons callbacks
